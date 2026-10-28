@@ -13,7 +13,7 @@ from vllm.v1.attention.backends.mla.prefill.registry import MLAPrefillBackendEnu
 from vllm.v1.attention.backends.registry import AttentionBackendEnum
 
 
-@pytest.mark.parametrize("capability", [100, 103, 120])
+@pytest.mark.parametrize("capability", [100, 103, 120, 121])
 @pytest.mark.parametrize("explicit", [False, True])
 def test_raon_attention_defaults_match_device_and_preserve_overrides(
     monkeypatch, capability, explicit
@@ -40,7 +40,7 @@ def test_raon_attention_defaults_match_device_and_preserve_overrides(
         speculative_config=None,
     )
     Raon1MiniForCausalLMConfig.verify_and_update_config(cast(VllmConfig, config))
-    portable = explicit or capability == 120
+    portable = explicit or capability in (120, 121)
     assert attention.backend_per_kind["mla_attention"] == (
         AttentionBackendEnum.TRITON_MLA
         if portable
@@ -51,7 +51,7 @@ def test_raon_attention_defaults_match_device_and_preserve_overrides(
         if portable
         else MLAPrefillBackendEnum.TRTLLM_RAGGED
     )
-    if capability == 120:
+    if capability in (120, 121):
         assert not attention.use_prefill_query_quantization
 
 
@@ -62,7 +62,8 @@ def test_raon_attention_defaults_match_device_and_preserve_overrides(
         ((10, 3), "nvfp4", False),
         ((12, 0), "nvfp4", False),
         ((12, 0), "mxfp8", True),
-        ((12, 1), "nvfp4", True),
+        ((12, 1), "nvfp4", False),
+        ((12, 1), "mxfp8", True),
     ],
 )
 def test_raon_gpu_warning_distinguishes_checkpoint_profile(

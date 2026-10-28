@@ -429,13 +429,15 @@ class Raon1MiniForCausalLMConfig(VerifyAndUpdateConfig):
             return
         cap = (capability.major, capability.minor)
         profile = os.environ.get("RAON_PRECISION_PROFILE", "mxfp8")
-        if cap in cls.TESTED_CAPABILITIES or (cap == (12, 0) and profile == "nvfp4"):
+        if cap in cls.TESTED_CAPABILITIES or (
+            cap in ((12, 0), (12, 1)) and profile == "nvfp4"
+        ):
             return
         logger.warning(
             "raon-1-mini preview detected %s (sm_%d%d), profile %s. "
             "This GPU/profile combination is untested. Tested configurations "
-            "are B300 (sm_103) and RTX 5090 (sm_120, NVFP4). "
-            "SM120 selects TRITON_MLA / FLASH_ATTN attention; other GPUs "
+            "are B300 (sm_103) and RTX 5090 (sm_120, NVFP4) / GB10 (sm_121, NVFP4). "
+            "SM120/SM121 select TRITON_MLA / FLASH_ATTN attention; other GPUs "
             "default to FLASHINFER_MLA / TRTLLM_RAGGED. The MXFP8 grouped "
             "MoE path requires sm_100-family kernels.",
             current_platform.get_device_name(),
@@ -491,20 +493,22 @@ class Raon1MiniForCausalLMConfig(VerifyAndUpdateConfig):
         from vllm.platforms import current_platform
 
         sm120 = current_platform.is_device_capability(120)
+        sm121 = current_platform.is_device_capability(121)
+        portable = sm120 or sm121  # consumer Blackwell: no sm_100 kernels
         attention_config = vllm_config.attention_config
         attention_config.backend_per_kind.setdefault(
             "mla_attention",
             AttentionBackendEnum.TRITON_MLA
-            if sm120
+            if portable
             else AttentionBackendEnum.FLASHINFER_MLA,
         )
         if attention_config.mla_prefill_backend is None:
             attention_config.mla_prefill_backend = (
                 MLAPrefillBackendEnum.FLASH_ATTN
-                if sm120
+                if portable
                 else MLAPrefillBackendEnum.TRTLLM_RAGGED
             )
-        if not sm120:
+        if not portable:
             attention_config.use_prefill_query_quantization = True
 
         nvfp4 = os.environ.get("RAON_PRECISION_PROFILE") == "nvfp4"
