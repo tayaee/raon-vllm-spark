@@ -22,7 +22,16 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
 MODEL_ID="${MODEL_ID:-KRAFTON/Raon-1-mini-preview-nvfp4}"
-REVISION="${REVISION:-0b0f06ac2b3d03abea62dd221fe7839fddf36dfe}"
+# Pin revisions per known model; unknown models follow main tip.
+# NOTE: ${REVISION+x} distinguishes unset (auto-pin) from REVISION="" (main tip),
+# because :- treats empty as unset.
+if [[ -z "${REVISION+x}" ]]; then
+  case "$MODEL_ID" in
+    KRAFTON/Raon-1-mini-preview-nvfp4) REVISION="0b0f06ac2b3d03abea62dd221fe7839fddf36dfe" ;;
+    KRAFTON/Raon-1-mini-preview) REVISION="da4cf162c8613993f2189ebb438a5f9a23f3e5ca" ;;
+    *) REVISION="" ;;
+  esac
+fi
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8000}"
 
