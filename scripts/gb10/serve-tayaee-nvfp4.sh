@@ -21,7 +21,7 @@ cd "$ROOT"
 # llmcompressor quantization_config is stripped by Raon1MiniForCausalLMConfig).
 # Goal state: this script serving successfully == fork accepts the checkpoint.
 #   ./serve-tayaee.sh
-MODEL_ID="${MODEL_ID:-tayaee/Raon-1-mini-preview-nvfp4-awq}"
+MODEL_ID="${MODEL_ID:-tayaee/Raon-1-mini-preview-nvfp4-awq-vllm}"
 REVISION="${REVISION:-}"
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8000}"

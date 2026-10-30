@@ -20,6 +20,10 @@ fi
 # shellcheck disable=SC1091
 source .venv/bin/activate
 
+# GB10 (sm_121) target architecture
+export TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-12.1}"
+export MAX_JOBS="${MAX_JOBS:-8}"
+
 # 2. install / build
 if [[ "${FULL:-0}" == "1" ]]; then
   echo "==> full source build (C++/CUDA, slow on first run)"
