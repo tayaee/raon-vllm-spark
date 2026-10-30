@@ -20,8 +20,8 @@ fi
 # shellcheck disable=SC1091
 source .venv/bin/activate
 
-# GB10 (sm_121) target architecture
-export TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-12.1}"
+# GB10 (sm_121) target architecture - requires '12.1a' for NVFP4 cvt instructions
+export TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-12.1a}"
 export MAX_JOBS="${MAX_JOBS:-8}"
 
 # 2. install / build
